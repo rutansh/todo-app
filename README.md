@@ -22,6 +22,18 @@ After `apm install` you will see:
 .agents/skills/    start-task, implement-feature, jira-tickets, stacked-mrs, ...
 ```
 
+## Credentials (only if you want it to open a merge request)
+
+Coding and testing need no credentials. To let the agent open an MR or PR, add your own to
+a git-ignored `.env` file:
+
+```bash
+cp .env.example .env     # fill in GH_TOKEN (GitHub) or GITLAB_TOKEN + GITLAB_HOST (GitLab)
+source .agents/skills/connect-tools/scripts/connect.sh   # loads .env and checks the tools
+```
+
+`.env` is ignored by git and by Cursor. Never paste tokens into the chat.
+
 ## The demo
 
 Open this folder in Cursor and type:
