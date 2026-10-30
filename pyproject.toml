@@ -1,7 +1,7 @@
 [project]
 name = "todo-app"
 version = "0.1.0"
-description = "Tiny todo app used to demo the agent-hub workflows"
+description = "Tiny todo app for trying the agent-hub workflows"
 requires-python = ">=3.10"
 dependencies = []
 

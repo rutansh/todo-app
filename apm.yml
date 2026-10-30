@@ -1,6 +1,6 @@
-name: demo-small-feature
+name: todo-app
 version: 1.0.0
-description: APM project for demo-small-feature
+description: APM project for todo-app
 author: rutansh
 # Which agent platforms to deploy to.
 # Resolution order: --target flag > this field > auto-detect from filesystem.
