@@ -1,6 +1,6 @@
-name: demo-trial-analyst
+name: demo-small-feature
 version: 1.0.0
-description: APM project for demo-trial-analyst
+description: APM project for demo-small-feature
 author: rutansh
 # Which agent platforms to deploy to.
 # Resolution order: --target flag > this field > auto-detect from filesystem.
@@ -9,7 +9,7 @@ targets:
   - cursor
 dependencies:
   apm:
-    - rutansh/ai4pharma-skills#v0.1.0
+    - rutansh/agent-hub#v0.2.0
   mcp: []
 includes: auto
 scripts: {}

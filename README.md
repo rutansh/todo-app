@@ -1,42 +1,58 @@
-# demo-trial-analyst
+# demo-small-feature
 
-Demo project showing how a team consumes shared skills from
-[`ai4pharma-skills`](https://github.com/rutansh/ai4pharma-skills) with APM.
+**Demo:** ask an AI agent for a small feature and watch it use the team's shared skills.
 
-This project installs **all** skills from the central repo, pinned to `v0.1.0`.
+The code is a tiny todo app (`todo.py`, `cli.py`, tests). The shared agents and skills come
+from [`agent-hub`](https://github.com/rutansh/agent-hub) through APM.
 
-## Setup
+## Setup (once)
 
 ```bash
-brew install apm        # once per machine
-gh auth login           # the skills repo is private; APM uses your GitHub auth
-apm install             # reads apm.yml + apm.lock.yaml, deploys skills
+brew install apm
+gh auth login            # agent-hub is private
+apm install              # pulls the agents and skills pinned in apm.lock.yaml
+uv sync                  # python deps
+uv run pytest            # 6 tests pass
 ```
 
-Skills land in `.agents/skills/`, where Cursor picks them up.
+After `apm install` you will see:
 
-## Try it
+```
+.cursor/agents/    architect, planner, builder
+.agents/skills/    start-task, implement-feature, jira-tickets, stacked-mrs, ...
+```
 
-Open this folder in Cursor and ask the agent:
+## The demo
 
-> Summarize `data/sample-trial.md`
+Open this folder in Cursor and type:
 
-The agent should apply the `clinical-trial-summary` skill and produce the structured
-brief, listing anything the source does not state.
+> Use start-task. I want to add due dates to tasks.
 
-You can also try:
+What should happen:
 
-> Write a literature review brief from the abstracts in `data/sample-trial.md`
+1. The agent asks: **small feature or big epic?** Answer: **small feature**.
+2. It reads `todo.py`, `cli.py` and `tests/` to learn the conventions.
+3. It adds tests first, then implements `--due YYYY-MM-DD` on `add` and shows the due
+   date in `list`.
+4. It runs `uv run pytest` and reports the result.
+5. It asks before pushing anything.
 
-## Update to a newer skills release
+Other small features to try:
+
+- "Add a `delete` command."
+- "Add a `--pending` flag to `list` that hides finished tasks."
+
+## What this shows
+
+One `apm install` gives every developer the same workflow. Nobody copies prompts around.
+
+## Update the shared skills
+
+Change the version in `apm.yml` (for example `#v0.3.0`), then:
 
 ```bash
-# edit the ref in apm.yml (e.g. #v0.2.0), then:
 apm install --update
 ```
 
-## Notes
-
-- All data in `data/` is **fictional** and for demo purposes only.
-- `apm_modules/` is git-ignored. `apm.lock.yaml` is committed so everyone gets
-  identical skills.
+See also: [`demo-big-epic`](https://github.com/rutansh/demo-big-epic) for the
+multi-agent epic workflow.
