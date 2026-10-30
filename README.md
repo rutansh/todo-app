@@ -1,8 +1,28 @@
 # todo-app
 
-A basic command line todo app (`todo.py`, `cli.py`, tests). It is a practice codebase for the
-shared agents and skills in [`agent-hub`](https://github.com/rutansh/agent-hub), which are
-installed here with APM. Use it for **both** small features and big epics.
+A basic todo app with a web UI, a JSON API and a command line (`todo.py` storage, `api.py`
+backend, `static/index.html` UI, `cli.py`, tests). It is a practice codebase for the shared
+agents and skills in [`agent-hub`](https://github.com/rutansh/agent-hub), which are installed
+here with APM. Use it for **both** small features and big epics.
+
+## Run the app
+
+```bash
+uv sync
+uv run python seed.py                        # optional: sample tasks (never overwrites yours)
+uv run uvicorn api:app --reload              # open http://localhost:8000
+```
+
+You can add tasks and tick them off. Tasks are stored in `todos.json` (git-ignored). Set
+`TODO_DATA_FILE` to use another file. Interactive API docs are at `/docs`.
+
+| Method | Path | Does |
+| --- | --- | --- |
+| `GET` | `/api/tasks` | List all tasks |
+| `POST` | `/api/tasks` | Add a task, body `{"title": "buy milk"}` |
+| `POST` | `/api/tasks/{id}/complete` | Mark a task done |
+
+The same data is available from the command line:
 
 ```bash
 uv run python cli.py add "buy milk"
@@ -16,7 +36,7 @@ uv run python cli.py done 1
 brew install apm
 apm install              # pulls the agents and skills pinned in apm.lock.yaml
 uv sync
-uv run pytest            # 6 tests pass
+uv run pytest            # 17 tests pass
 ```
 
 After `apm install`:
@@ -53,12 +73,13 @@ The agent asks whether it is a **small feature** or a **big epic** and runs the 
 
 ### Small feature (one MR)
 
-- "Add due dates to tasks (`--due YYYY-MM-DD`) and show them in `list`."
-- "Add a `delete` command."
-- "Add a `--pending` flag to `list` that hides finished tasks."
+- "Add due dates to tasks and show them in the UI, the API and `list`."
+- "Add a way to delete a task: an API endpoint, a button in the UI and a `delete` command."
+- "Add a filter that hides finished tasks, in the UI and with a `--pending` flag on `list`."
 
-Expected: the agent reads `todo.py`, `cli.py` and `tests/`, writes tests first, implements the
-change, runs `uv run pytest`, and asks before pushing anything.
+Expected: the agent reads `todo.py`, `api.py`, `static/index.html`, `cli.py` and `tests/`,
+writes tests first, implements the change, runs `uv run pytest`, and asks before pushing
+anything. With `--reload` the server restarts by itself, so refresh the browser to see it.
 
 ### Big epic (design, tickets, stack of MRs)
 

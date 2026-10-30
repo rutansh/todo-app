@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Todo App</title>
+<style>
+  :root {
+    --bg: #f4f6fb; --card: #ffffff; --text: #1d2433; --muted: #6b7587;
+    --line: #e4e8f0; --accent: #4f46e5; --accent-dark: #4338ca; --ok: #16a34a; --err: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; background: var(--bg); color: var(--text);
+    font: 16px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    display: flex; justify-content: center; padding: 48px 16px;
+  }
+  main { width: 100%; max-width: 560px; }
+  header { margin-bottom: 20px; }
+  h1 { margin: 0; font-size: 28px; letter-spacing: -0.02em; }
+  #summary { color: var(--muted); font-size: 14px; margin-top: 2px; }
+  .card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+  }
+  form { display: flex; gap: 8px; padding: 14px; border-bottom: 1px solid var(--line); }
+  input[type="text"] {
+    flex: 1; padding: 11px 13px; font: inherit; color: inherit; background: #fff;
+    border: 1px solid var(--line); border-radius: 9px; outline: none;
+  }
+  input[type="text"]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(79,70,229,.15); }
+  button.primary {
+    padding: 0 18px; font: inherit; font-weight: 600; color: #fff; background: var(--accent);
+    border: 0; border-radius: 9px; cursor: pointer;
+  }
+  button.primary:hover { background: var(--accent-dark); }
+  ul { list-style: none; margin: 0; padding: 0; }
+  li { display: flex; align-items: center; gap: 12px; padding: 13px 16px; border-bottom: 1px solid var(--line); }
+  li:last-child { border-bottom: 0; }
+  .check {
+    flex: none; width: 24px; height: 24px; border-radius: 50%; padding: 0; cursor: pointer;
+    border: 2px solid #c3cad8; background: #fff; color: #fff; font-size: 14px; line-height: 1;
+  }
+  .check:hover { border-color: var(--ok); }
+  li.done .check { background: var(--ok); border-color: var(--ok); cursor: default; }
+  li.done .title { color: var(--muted); text-decoration: line-through; }
+  .title { flex: 1; word-break: break-word; }
+  .empty { padding: 36px 16px; text-align: center; color: var(--muted); }
+  #error { min-height: 22px; margin-top: 10px; color: var(--err); font-size: 14px; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Todo</h1>
+    <div id="summary" aria-live="polite">Loading...</div>
+  </header>
+  <section class="card">
+    <form id="add-form">
+      <input id="title" type="text" placeholder="What needs doing?" maxlength="200"
+             autocomplete="off" aria-label="New task">
+      <button class="primary" type="submit">Add</button>
+    </form>
+    <ul id="tasks"></ul>
+  </section>
+  <div id="error" role="alert"></div>
+</main>
+<script>
+  const tasksEl = document.getElementById("tasks");
+  const summaryEl = document.getElementById("summary");
+  const errorEl = document.getElementById("error");
+  const titleEl = document.getElementById("title");
+
+  async function api(path, options = {}) {
+    const response = await fetch(path, {
+      headers: { "Content-Type": "application/json" }, ...options,
+    });
+    if (!response.ok) {
+      throw new Error(response.status === 422
+        ? "Please enter a title (1 to 200 characters)."
+        : "Something went wrong (" + response.status + ").");
+    }
+    return response.json();
+  }
+
+  function showError(message) { errorEl.textContent = message || ""; }
+
+  function renderTask(task) {
+    const item = document.createElement("li");
+    if (task.is_done) item.classList.add("done");
+    const check = document.createElement("button");
+    check.type = "button";
+    check.className = "check";
+    check.textContent = task.is_done ? "\u2713" : "";
+    check.setAttribute("aria-label", (task.is_done ? "Completed: " : "Mark done: ") + task.title);
+    check.disabled = task.is_done;
+    check.addEventListener("click", () => complete(task.task_id));
+    const title = document.createElement("span");
+    title.className = "title";
+    title.textContent = task.title; // textContent keeps user text from being treated as HTML
+    item.append(check, title);
+    return item;
+  }
+
+  function render(tasks) {
+    tasksEl.replaceChildren();
+    if (tasks.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "empty";
+      empty.textContent = "Nothing here yet. Add your first task above.";
+      tasksEl.append(empty);
+    } else {
+      tasks.forEach((task) => tasksEl.append(renderTask(task)));
+    }
+    const done = tasks.filter((task) => task.is_done).length;
+    summaryEl.textContent = (tasks.length - done) + " open \u00b7 " + done + " done";
+  }
+
+  async function load() {
+    try { render(await api("/api/tasks")); showError(""); }
+    catch (error) { showError(error.message); }
+  }
+
+  async function complete(taskId) {
+    try { await api("/api/tasks/" + taskId + "/complete", { method: "POST" }); await load(); }
+    catch (error) { showError(error.message); }
+  }
+
+  document.getElementById("add-form").addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await api("/api/tasks", { method: "POST", body: JSON.stringify({ title: titleEl.value }) });
+      titleEl.value = "";
+      await load();
+    } catch (error) { showError(error.message); }
+    titleEl.focus();
+  });
+
+  load();
+</script>
+</body>
+</html>
