@@ -1,0 +1,15 @@
+name: demo-trial-analyst
+version: 1.0.0
+description: APM project for demo-trial-analyst
+author: rutansh
+# Which agent platforms to deploy to.
+# Resolution order: --target flag > this field > auto-detect from filesystem.
+# Accepted values: agent-skills, antigravity, claude, codex, copilot, cursor, gemini, grok-bot, grok-build, hermes, kiro, opencode, vscode, windsurf
+targets:
+  - cursor
+dependencies:
+  apm:
+    - rutansh/ai4pharma-skills#v0.1.0
+  mcp: []
+includes: auto
+scripts: {}
