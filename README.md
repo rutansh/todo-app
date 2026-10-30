@@ -14,7 +14,6 @@ uv run python cli.py done 1
 
 ```bash
 brew install apm
-gh auth login            # agent-hub is private
 apm install              # pulls the agents and skills pinned in apm.lock.yaml
 uv sync
 uv run pytest            # 6 tests pass
